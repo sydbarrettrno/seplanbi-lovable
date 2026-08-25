@@ -97,10 +97,18 @@ function addDays(dateIso: string, days: number) {
   return iso(d);
 }
 
+function at<T>(arr: readonly T[], i: number): T {
+  return arr[Math.min(Math.max(i, 0), arr.length - 1)] as T;
+}
+
+function pick<T>(arr: readonly T[], r: number): T {
+  return at(arr, Math.floor(r * arr.length));
+}
+
 function pickWeighted(r: number, pesos: number[]) {
   let acc = 0;
   for (let i = 0; i < pesos.length; i++) {
-    acc += pesos[i];
+    acc += at(pesos, i);
     if (r <= acc) return i;
   }
   return pesos.length - 1;
@@ -118,7 +126,7 @@ function buildProtocolos(): Protocolo[] {
 
   for (const [ano, volumes] of anos) {
     for (let mes = 0; mes < 12; mes++) {
-      const total = volumes[mes];
+      const total = at(volumes, mes);
       for (let i = 0; i < total; i++) {
         const diasNoMes = new Date(Date.UTC(ano, mes + 1, 0)).getUTCDate();
         const dia = 1 + Math.floor(random() * diasNoMes);
@@ -126,14 +134,14 @@ function buildProtocolos(): Protocolo[] {
         if (dataAbertura > REFERENCIA) continue;
 
         const ci = pickWeighted(random(), PESO_CATEGORIA);
-        const categoriaFinal = CATEGORIAS[ci];
-        const setor = SETORES[Math.floor(random() * SETORES.length)];
-        const responsavel = RESPONSAVEIS[Math.floor(random() * RESPONSAVEIS.length)];
-        const requerente = REQUERENTES[Math.floor(random() * REQUERENTES.length)];
+        const categoriaFinal = at(CATEGORIAS, ci);
+        const setor = pick(SETORES, random());
+        const responsavel = pick(RESPONSAVEIS, random());
+        const requerente = pick(REQUERENTES, random());
 
         // duração plausível em torno da mediana-alvo da categoria
         const jitter = 0.4 + random() * 1.9;
-        const duracao = Math.max(1, Math.round(TEMPO_BASE[ci] * jitter));
+        const duracao = Math.max(1, Math.round(at(TEMPO_BASE, ci) * jitter));
         const dataPrevista = addDays(dataAbertura, duracao);
 
         const concluiu = dataPrevista <= REFERENCIA && random() < 0.82;
@@ -148,7 +156,7 @@ function buildProtocolos(): Protocolo[] {
           ultimaMovimentacao = dataPrevista;
         } else {
           const abertas = SITUACOES.slice(2);
-          situacaoFinal = abertas[Math.floor(random() * abertas.length)];
+          situacaoFinal = pick(abertas, random());
           const decorrido = Math.max(
             0,
             Math.round(
