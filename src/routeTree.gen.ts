@@ -10,33 +10,115 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CategoriasRouteImport } from './routes/categorias'
+import { Route as DemandaRouteImport } from './routes/demanda'
+import { Route as EstoqueRouteImport } from './routes/estoque'
+import { Route as ProducaoRouteImport } from './routes/producao'
+import { Route as ProtocolosRouteImport } from './routes/protocolos'
+import { Route as SetoresRouteImport } from './routes/setores'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CategoriasRoute = CategoriasRouteImport.update({
+  id: '/categorias',
+  path: '/categorias',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemandaRoute = DemandaRouteImport.update({
+  id: '/demanda',
+  path: '/demanda',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EstoqueRoute = EstoqueRouteImport.update({
+  id: '/estoque',
+  path: '/estoque',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProducaoRoute = ProducaoRouteImport.update({
+  id: '/producao',
+  path: '/producao',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProtocolosRoute = ProtocolosRouteImport.update({
+  id: '/protocolos',
+  path: '/protocolos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SetoresRoute = SetoresRouteImport.update({
+  id: '/setores',
+  path: '/setores',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/categorias': typeof CategoriasRoute
+  '/demanda': typeof DemandaRoute
+  '/estoque': typeof EstoqueRoute
+  '/producao': typeof ProducaoRoute
+  '/protocolos': typeof ProtocolosRoute
+  '/setores': typeof SetoresRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/categorias': typeof CategoriasRoute
+  '/demanda': typeof DemandaRoute
+  '/estoque': typeof EstoqueRoute
+  '/producao': typeof ProducaoRoute
+  '/protocolos': typeof ProtocolosRoute
+  '/setores': typeof SetoresRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/categorias': typeof CategoriasRoute
+  '/demanda': typeof DemandaRoute
+  '/estoque': typeof EstoqueRoute
+  '/producao': typeof ProducaoRoute
+  '/protocolos': typeof ProtocolosRoute
+  '/setores': typeof SetoresRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/categorias'
+    | '/demanda'
+    | '/estoque'
+    | '/producao'
+    | '/protocolos'
+    | '/setores'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/categorias'
+    | '/demanda'
+    | '/estoque'
+    | '/producao'
+    | '/protocolos'
+    | '/setores'
+  id:
+    | '__root__'
+    | '/'
+    | '/categorias'
+    | '/demanda'
+    | '/estoque'
+    | '/producao'
+    | '/protocolos'
+    | '/setores'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CategoriasRoute: typeof CategoriasRoute
+  DemandaRoute: typeof DemandaRoute
+  EstoqueRoute: typeof EstoqueRoute
+  ProducaoRoute: typeof ProducaoRoute
+  ProtocolosRoute: typeof ProtocolosRoute
+  SetoresRoute: typeof SetoresRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +130,59 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/categorias': {
+      id: '/categorias'
+      path: '/categorias'
+      fullPath: '/categorias'
+      preLoaderRoute: typeof CategoriasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demanda': {
+      id: '/demanda'
+      path: '/demanda'
+      fullPath: '/demanda'
+      preLoaderRoute: typeof DemandaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/estoque': {
+      id: '/estoque'
+      path: '/estoque'
+      fullPath: '/estoque'
+      preLoaderRoute: typeof EstoqueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/producao': {
+      id: '/producao'
+      path: '/producao'
+      fullPath: '/producao'
+      preLoaderRoute: typeof ProducaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/protocolos': {
+      id: '/protocolos'
+      path: '/protocolos'
+      fullPath: '/protocolos'
+      preLoaderRoute: typeof ProtocolosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/setores': {
+      id: '/setores'
+      path: '/setores'
+      fullPath: '/setores'
+      preLoaderRoute: typeof SetoresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CategoriasRoute: CategoriasRoute,
+  DemandaRoute: DemandaRoute,
+  EstoqueRoute: EstoqueRoute,
+  ProducaoRoute: ProducaoRoute,
+  ProtocolosRoute: ProtocolosRoute,
+  SetoresRoute: SetoresRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
