@@ -31,11 +31,11 @@ export function SectionCard({
   className,
 }: {
   titulo: string;
-  descricao?: string;
-  info?: ReactNode;
-  acao?: ReactNode;
+  descricao?: string | undefined;
+  info?: ReactNode | undefined;
+  acao?: ReactNode | undefined;
   children: ReactNode;
-  className?: string;
+  className?: string | undefined;
 }) {
   return (
     <section className={cn("painel-card flex flex-col p-4 sm:p-5", className)}>

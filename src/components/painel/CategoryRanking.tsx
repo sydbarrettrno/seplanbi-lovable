@@ -14,11 +14,11 @@ export function CategoryRanking({
   limite = 8,
 }: {
   titulo: string;
-  descricao?: string;
-  info?: string;
+  descricao?: string | undefined;
+  info?: string | undefined;
   base: Protocolo[];
-  anteriores?: Protocolo[];
-  tom?: "entrada" | "conclusao" | "atencao";
+  anteriores?: Protocolo[] | undefined;
+  tom?: "neutro" | "entrada" | "conclusao" | "atencao";
   limite?: number;
 }) {
   const { abrirDetalhe, setFiltro, filtros } = useDashboard();
