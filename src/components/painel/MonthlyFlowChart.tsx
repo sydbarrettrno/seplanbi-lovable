@@ -119,6 +119,7 @@ export function MonthlyFlowChart() {
                   fill={tonsRecebidos[i] ?? tonsRecebidos[0]}
                   radius={[2, 2, 0, 0]}
                   maxBarSize={22}
+                  isAnimationActive={false}
                 />
               ))}
               {series.map((s, i) => (
@@ -128,6 +129,7 @@ export function MonthlyFlowChart() {
                   fill={tonsConcluidos[i] ?? tonsConcluidos[0]}
                   radius={[2, 2, 0, 0]}
                   maxBarSize={22}
+                  isAnimationActive={false}
                 />
               ))}
             </BarChart>
