@@ -9,13 +9,14 @@ export function MetricInfo({ children }: { children: ReactNode }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <button
-          type="button"
+        <span
+          role="note"
+          tabIndex={0}
           aria-label="Definição do indicador"
-          className="text-muted-foreground/70 transition-colors hover:text-foreground"
+          className="inline-flex cursor-help text-muted-foreground/70 transition-colors hover:text-foreground"
         >
           <Info className="size-3.5" />
-        </button>
+        </span>
       </TooltipTrigger>
       <TooltipContent className="max-w-72 text-xs leading-relaxed">{children}</TooltipContent>
     </Tooltip>
@@ -31,11 +32,11 @@ export function SectionCard({
   className,
 }: {
   titulo: string;
-  descricao?: string;
-  info?: ReactNode;
-  acao?: ReactNode;
+  descricao?: string | undefined;
+  info?: ReactNode | undefined;
+  acao?: ReactNode | undefined;
   children: ReactNode;
-  className?: string;
+  className?: string | undefined;
 }) {
   return (
     <section className={cn("painel-card flex flex-col p-4 sm:p-5", className)}>

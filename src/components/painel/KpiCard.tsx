@@ -29,13 +29,20 @@ export function KpiCard({
   }[tom];
 
   return (
-    <button
-      type="button"
+    <div
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
       onClick={onClick}
-      disabled={!onClick}
+      onKeyDown={(e) => {
+        if (!onClick) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
       className={cn(
         "painel-card group relative flex flex-col overflow-hidden p-4 text-left transition-colors",
-        onClick && "hover:border-ring/60 focus-visible:outline-2 focus-visible:outline-ring",
+        onClick && "cursor-pointer hover:border-ring/60 focus-visible:outline-2 focus-visible:outline-ring",
         ativo && "border-ring",
       )}
     >
@@ -58,6 +65,6 @@ export function KpiCard({
           Ver protocolos →
         </span>
       ) : null}
-    </button>
+    </div>
   );
 }
