@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   AlertTriangle,
@@ -41,7 +41,13 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useHidratado } from "@/components/painel/primitives";
-import { MESES_2026, PERIODOS, ATUALIZADO_EM, calcular } from "@/data/executivo";
+import {
+  ATUALIZADO_EM,
+  ESTOQUE_ANTERIOR,
+  MESES_2026,
+  PERIODOS,
+  calcular,
+} from "@/data/executivo";
 import { cn } from "@/lib/utils";
 
 const nf = new Intl.NumberFormat("pt-BR");
@@ -51,11 +57,14 @@ const pct = (v: number) => `${v > 0 ? "+" : ""}${v.toFixed(1).replace(".", ",")}
 
 function Sparkline({ dados, cor }: { dados: number[]; cor: string }) {
   const hidratado = useHidratado();
+  const reactId = useId();
+  const id = `spark-${reactId.split(":").join("")}`;
   const pontos = dados.map((v, i) => ({ i, v }));
-  const id = `spark-${cor.replace(/[^a-z]/g, "")}`;
+
   if (!hidratado) return <Skeleton className="h-10 w-full" />;
+
   return (
-    <div className="h-10 w-full">
+    <div className="h-10 w-full" aria-hidden="true">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={pontos} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
           <defs>
@@ -118,39 +127,45 @@ function KpiGrande({
       <TooltipTrigger asChild>
         <article
           className={cn(
-            "group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-surface p-4 pt-5 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.18)] transition-all hover:-translate-y-0.5 hover:shadow-[0_2px_4px_rgba(16,24,40,0.06),0_16px_32px_-14px_rgba(16,24,40,0.28)]",
+            "group relative flex min-h-[190px] flex-col overflow-hidden rounded-2xl border border-border bg-surface p-4 pt-5 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.18)] transition-all hover:-translate-y-0.5 hover:shadow-[0_2px_4px_rgba(16,24,40,0.06),0_16px_32px_-14px_rgba(16,24,40,0.28)]",
             destaque === "positivo" && "ring-1 ring-positivo/30",
             destaque === "critico" && "ring-1 ring-critico/30",
           )}
         >
           <span className="absolute inset-x-0 top-0 h-[3px]" style={{ background: cor }} />
 
-          <header className="flex items-start justify-between gap-2">
-            <span className="flex items-center gap-2">
+          <header className="flex min-h-8 items-start justify-between gap-2">
+            <span className="flex min-w-0 items-center gap-2">
               <span
-                className="flex size-7 items-center justify-center rounded-lg"
+                className="flex size-7 shrink-0 items-center justify-center rounded-lg"
                 style={{ background: `color-mix(in oklab, ${cor} 12%, transparent)`, color: cor }}
               >
                 {icone}
               </span>
-              <span className="text-[10.5px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              <span className="truncate text-[10.5px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                 {indice} <span className="text-border">·</span> {titulo}
               </span>
             </span>
+
             {variacao !== undefined ? (
               <span
                 className={cn(
-                  "flex shrink-0 items-center gap-0.5 text-[11px] font-semibold tabular",
+                  "shrink-0 text-right text-[10px] font-semibold leading-tight tabular",
                   bom ? "text-positivo" : "text-critico",
                 )}
               >
-                {sobe ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
-                {pct(variacao)}
+                <span className="flex items-center justify-end gap-0.5">
+                  {sobe ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
+                  {pct(variacao)}
+                </span>
+                <span className="block pt-0.5 text-[8.5px] font-medium text-muted-foreground">
+                  vs. período anterior
+                </span>
               </span>
             ) : null}
           </header>
 
-          <div className="mt-3 flex items-end gap-1.5">
+          <div className="mt-2 flex items-end gap-1.5">
             <span
               className={cn(
                 "numero-grande text-[2.35rem] leading-none font-semibold tracking-tight",
@@ -168,20 +183,22 @@ function KpiGrande({
             ) : null}
           </div>
 
-          <p className="mt-1.5 text-[11.5px] leading-snug text-muted-foreground">{explicacao}</p>
+          <p className="mt-1.5 min-h-8 text-[11.5px] leading-snug text-muted-foreground">
+            {explicacao}
+          </p>
 
-          <div className="mt-2">
+          <div className="mt-auto pt-1">
             <Sparkline dados={serie} cor={cor} />
           </div>
 
           <footer className="mt-2 flex items-center justify-between gap-2 border-t border-border pt-2">
-            <span className="text-[10.5px] font-medium uppercase tracking-wide text-muted-foreground">
+            <span className="truncate text-[10.5px] font-medium text-muted-foreground">
               {periodoRotulo}
             </span>
             <Link
               to={to}
               aria-label={`Ver detalhes de ${titulo}`}
-              className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
+              className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
             >
               <ArrowRight className="size-4" />
             </Link>
@@ -193,6 +210,47 @@ function KpiGrande({
   );
 }
 
+/* ----------------------------- Tooltip fluxo ----------------------------- */
+
+type FluxoPonto = {
+  mes: string;
+  entradas: number;
+  saidas: number;
+  acumulado: number;
+};
+
+type FluxoTooltipProps = {
+  active?: boolean;
+  payload?: Array<{ payload?: FluxoPonto }>;
+};
+
+function FluxoTooltip({ active, payload }: FluxoTooltipProps) {
+  const ponto = payload?.[0]?.payload;
+  if (!active || !ponto) return null;
+
+  const itens = [
+    { rotulo: "Entradas", valor: ponto.entradas, cor: "var(--serie-entrada)" },
+    { rotulo: "Saídas", valor: ponto.saidas, cor: "var(--positivo)" },
+    { rotulo: "Saldo acumulado", valor: ponto.acumulado, cor: "var(--atencao)" },
+  ];
+
+  return (
+    <div className="min-w-44 rounded-xl border border-border bg-surface p-3 shadow-lg">
+      <p className="mb-2 text-xs font-semibold text-foreground">{ponto.mes}</p>
+      <div className="space-y-1.5">
+        {itens.map((item) => (
+          <div key={item.rotulo} className="flex items-center justify-between gap-4 text-xs">
+            <span className="flex items-center gap-2 text-muted-foreground">
+              <span className="size-2 rounded-full" style={{ background: item.cor }} />
+              {item.rotulo}
+            </span>
+            <span className="numero-grande font-semibold text-foreground">{nf.format(item.valor)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 /* --------------------------------- Gauge --------------------------------- */
 
@@ -231,13 +289,20 @@ export function ExecutiveView() {
   const d = calcular(periodo);
   const hidratado = useHidratado();
 
-  const serieEntradas = MESES_2026.map((m) => m.entradas);
-  const serieSaidas = MESES_2026.map((m) => m.saidas);
-  const serieSaldoSpark = MESES_2026.map((m) => m.entradas - m.saidas);
-  const serieEstoque = MESES_2026.map((m, i) =>
-    MESES_2026.slice(0, i + 1).reduce((a, x) => a + x.entradas - x.saidas, 1553),
+  const serieEntradas = d.meses.map((m) => m.entradas);
+  const serieSaidas = d.meses.map((m) => m.saidas);
+  const serieSaldoSpark = d.meses.map((m) => m.entradas - m.saidas);
+  const serieTempo = d.meses.map((m) => m.tempoMedio);
+
+  const saldoAntesPeriodo = MESES_2026.slice(0, periodo.inicio).reduce(
+    (total, mes) => total + mes.entradas - mes.saidas,
+    0,
   );
-  const serieTempo = MESES_2026.map((m) => m.tempoMedio);
+  let estoqueCorrente = ESTOQUE_ANTERIOR + saldoAntesPeriodo;
+  const serieEstoque = d.meses.map((mes) => {
+    estoqueCorrente += mes.entradas - mes.saidas;
+    return estoqueCorrente;
+  });
 
   const alertas = [
     { texto: "Processos com prazo vencido", valor: "18,7%", tom: "critico" as const },
@@ -311,24 +376,33 @@ export function ExecutiveView() {
           {/* KPIs */}
           <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
             <KpiGrande
+              indice="01"
               icone={<Inbox className="size-4" />}
               titulo="Recebidos"
               valor={nf.format(d.recebidos)}
               variacao={d.variacao.recebidos}
               serie={serieEntradas}
               cor="var(--serie-entrada)"
-              tooltip="Demandas protocoladas no período selecionado."
+              explicacao="Protocolos recebidos no período."
+              tooltip="Demandas protocoladas no período selecionado. O mini gráfico usa as entradas mensais do mesmo período."
+              periodoRotulo={periodo.rotulo}
+              to="/demanda"
             />
             <KpiGrande
+              indice="02"
               icone={<CheckCircle2 className="size-4" />}
               titulo="Finalizados"
               valor={nf.format(d.finalizados)}
               variacao={d.variacao.finalizados}
               serie={serieSaidas}
               cor="var(--positivo)"
-              tooltip="Demandas encerradas no período selecionado."
+              explicacao="Concluído + Encerrado no período."
+              tooltip="Demandas finalizadas no período selecionado. O mini gráfico usa as saídas mensais do mesmo período."
+              periodoRotulo={periodo.rotulo}
+              to="/producao"
             />
             <KpiGrande
+              indice="03"
               icone={<Scale className="size-4" />}
               titulo="Saldo do Período"
               valor={`${d.saldo > 0 ? "+" : ""}${nf.format(d.saldo)}`}
@@ -336,9 +410,13 @@ export function ExecutiveView() {
               serie={serieSaldoSpark}
               cor="var(--positivo)"
               destaque="positivo"
-              tooltip="Diferença entre o que entrou e o que foi finalizado no período."
+              explicacao="Recebidos − Finalizados no período."
+              tooltip="Diferença mensal entre entradas e finalizações no período selecionado."
+              periodoRotulo={periodo.rotulo}
+              to="/producao"
             />
             <KpiGrande
+              indice="04"
               icone={<Layers className="size-4" />}
               titulo="Estoque Atual"
               valor={nf.format(d.estoque)}
@@ -346,9 +424,13 @@ export function ExecutiveView() {
               variacaoBoaSeSobe={false}
               serie={serieEstoque}
               cor="var(--serie-entrada)"
-              tooltip="Demandas em andamento na data da atualização."
+              explicacao="Processos ainda em andamento na data."
+              tooltip="Estoque acumulado mês a mês, considerando o saldo anterior ao início do período selecionado."
+              periodoRotulo={periodo.rotulo}
+              to="/estoque"
             />
             <KpiGrande
+              indice="05"
               icone={<Clock className="size-4" />}
               titulo="Tempo Médio"
               valor={String(d.tempoMedio)}
@@ -357,24 +439,37 @@ export function ExecutiveView() {
               variacaoBoaSeSobe={false}
               serie={serieTempo}
               cor="var(--atencao)"
-              tooltip="Média de dias entre a abertura e a finalização."
+              explicacao="Abertura → finalização no período."
+              tooltip="Média de dias entre a abertura e a finalização. O mini gráfico acompanha o tempo médio mensal do período."
+              periodoRotulo={periodo.rotulo}
+              to="/estoque"
             />
           </section>
 
           {/* Gráfico + Pontos de atenção */}
           <section className="grid grid-cols-1 gap-4 xl:grid-cols-[1.9fr_1fr]">
             <div className="rounded-2xl border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.18)]">
-              <header className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="text-base font-semibold tracking-tight text-foreground">
-                  Evolução Mensal – Entradas x Saídas
-                </h2>
-                <span className="text-xs text-muted-foreground">{periodo.rotulo}</span>
+              <header className="mb-3 flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--serie-entrada)]">
+                    Fluxo mensal
+                  </p>
+                  <h2 className="mt-1 text-xl font-semibold tracking-tight text-foreground">
+                    Recebidos x Finalizados
+                  </h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Entradas e finalizações por mês, com saldo acumulado no período.
+                  </p>
+                </div>
+                <span className="rounded-full border border-border bg-muted/50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Mensal
+                </span>
               </header>
 
               {hidratado ? (
                 <div className="h-[360px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={d.serieSaldo} margin={{ top: 18, right: 12, bottom: 0, left: -14 }}>
+                    <ComposedChart data={d.serieSaldo} margin={{ top: 8, right: 12, bottom: 0, left: -14 }}>
                       <CartesianGrid stroke="var(--border)" vertical={false} />
                       <XAxis
                         dataKey="mes"
@@ -389,28 +484,46 @@ export function ExecutiveView() {
                       />
                       <RTooltip
                         cursor={{ fill: "color-mix(in oklab, var(--muted) 60%, transparent)" }}
-                        contentStyle={{
-                          borderRadius: 12,
-                          border: "1px solid var(--border)",
-                          fontSize: 12,
-                          background: "var(--surface)",
-                        }}
-                        formatter={(v, n) => [
-                          nf.format(Number(v)),
-                          n === "entradas" ? "Entradas" : n === "saidas" ? "Saídas" : "Saldo acumulado",
-                        ]}
+                        content={<FluxoTooltip />}
                       />
                       <Legend
-                        wrapperStyle={{ fontSize: 12, paddingTop: 10 }}
+                        verticalAlign="top"
+                        align="right"
+                        height={34}
+                        wrapperStyle={{ fontSize: 12 }}
                         formatter={(n) =>
                           n === "entradas" ? "Entradas" : n === "saidas" ? "Saídas" : "Saldo acumulado"
                         }
                       />
-                      <Bar dataKey="entradas" fill="var(--serie-entrada)" radius={[6, 6, 0, 0]} maxBarSize={46} isAnimationActive={false}>
-                        <LabelList dataKey="entradas" position="top" fontSize={11} fill="var(--muted-foreground)" formatter={(v: number) => nf.format(v)} />
+                      <Bar
+                        dataKey="entradas"
+                        fill="var(--serie-entrada)"
+                        radius={[6, 6, 0, 0]}
+                        maxBarSize={46}
+                        isAnimationActive={false}
+                      >
+                        <LabelList
+                          dataKey="entradas"
+                          position="top"
+                          fontSize={11}
+                          fill="var(--muted-foreground)"
+                          formatter={(v: number) => nf.format(v)}
+                        />
                       </Bar>
-                      <Bar dataKey="saidas" fill="var(--positivo)" radius={[6, 6, 0, 0]} maxBarSize={46} isAnimationActive={false}>
-                        <LabelList dataKey="saidas" position="top" fontSize={11} fill="var(--muted-foreground)" formatter={(v: number) => nf.format(v)} />
+                      <Bar
+                        dataKey="saidas"
+                        fill="var(--positivo)"
+                        radius={[6, 6, 0, 0]}
+                        maxBarSize={46}
+                        isAnimationActive={false}
+                      >
+                        <LabelList
+                          dataKey="saidas"
+                          position="top"
+                          fontSize={11}
+                          fill="var(--muted-foreground)"
+                          formatter={(v: number) => nf.format(v)}
+                        />
                       </Bar>
                       <Line
                         type="monotone"
@@ -418,6 +531,7 @@ export function ExecutiveView() {
                         stroke="var(--atencao)"
                         strokeWidth={2.5}
                         dot={{ r: 3.5, fill: "var(--atencao)" }}
+                        activeDot={{ r: 5, fill: "var(--atencao)" }}
                         isAnimationActive={false}
                       />
                     </ComposedChart>
