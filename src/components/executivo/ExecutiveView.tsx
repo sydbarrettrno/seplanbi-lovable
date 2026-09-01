@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from "react";
+import { Link } from "@tanstack/react-router";
 import {
   AlertTriangle,
+  ArrowRight,
   CheckCircle2,
   ChevronDown,
   Clock,
@@ -50,13 +52,14 @@ const pct = (v: number) => `${v > 0 ? "+" : ""}${v.toFixed(1).replace(".", ",")}
 function Sparkline({ dados, cor }: { dados: number[]; cor: string }) {
   const hidratado = useHidratado();
   const pontos = dados.map((v, i) => ({ i, v }));
+  const id = `spark-${cor.replace(/[^a-z]/g, "")}`;
   if (!hidratado) return <Skeleton className="h-10 w-full" />;
   return (
     <div className="h-10 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={pontos} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
           <defs>
-            <linearGradient id={`spark-${cor.replace(/[^a-z]/g, "")}`} x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={cor} stopOpacity={0.35} />
               <stop offset="100%" stopColor={cor} stopOpacity={0} />
             </linearGradient>
@@ -66,7 +69,7 @@ function Sparkline({ dados, cor }: { dados: number[]; cor: string }) {
             dataKey="v"
             stroke={cor}
             strokeWidth={2}
-            fill={`url(#spark-${cor.replace(/[^a-z]/g, "")})`}
+            fill={`url(#${id})`}
             isAnimationActive={false}
             dot={false}
           />
@@ -77,6 +80,7 @@ function Sparkline({ dados, cor }: { dados: number[]; cor: string }) {
 }
 
 function KpiGrande({
+  indice,
   icone,
   titulo,
   valor,
@@ -86,8 +90,12 @@ function KpiGrande({
   serie,
   cor,
   destaque,
+  explicacao,
   tooltip,
+  periodoRotulo,
+  to,
 }: {
+  indice: string;
   icone: ReactNode;
   titulo: string;
   valor: string;
@@ -97,7 +105,10 @@ function KpiGrande({
   serie: number[];
   cor: string;
   destaque?: "positivo" | "critico";
+  explicacao: string;
   tooltip: string;
+  periodoRotulo: string;
+  to: "/demanda" | "/producao" | "/estoque";
 }) {
   const sobe = (variacao ?? 0) >= 0;
   const bom = variacaoBoaSeSobe ? sobe : !sobe;
@@ -107,25 +118,42 @@ function KpiGrande({
       <TooltipTrigger asChild>
         <article
           className={cn(
-            "group cursor-default rounded-2xl border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.18)] transition-all hover:-translate-y-0.5 hover:shadow-[0_2px_4px_rgba(16,24,40,0.06),0_16px_32px_-14px_rgba(16,24,40,0.28)]",
+            "group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-surface p-4 pt-5 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.18)] transition-all hover:-translate-y-0.5 hover:shadow-[0_2px_4px_rgba(16,24,40,0.06),0_16px_32px_-14px_rgba(16,24,40,0.28)]",
             destaque === "positivo" && "ring-1 ring-positivo/30",
             destaque === "critico" && "ring-1 ring-critico/30",
           )}
         >
-          <header className="flex items-center justify-between">
-            <span className="text-[13px] font-medium text-muted-foreground">{titulo}</span>
-            <span
-              className="flex size-8 items-center justify-center rounded-xl"
-              style={{ background: `color-mix(in oklab, ${cor} 12%, transparent)`, color: cor }}
-            >
-              {icone}
+          <span className="absolute inset-x-0 top-0 h-[3px]" style={{ background: cor }} />
+
+          <header className="flex items-start justify-between gap-2">
+            <span className="flex items-center gap-2">
+              <span
+                className="flex size-7 items-center justify-center rounded-lg"
+                style={{ background: `color-mix(in oklab, ${cor} 12%, transparent)`, color: cor }}
+              >
+                {icone}
+              </span>
+              <span className="text-[10.5px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                {indice} <span className="text-border">·</span> {titulo}
+              </span>
             </span>
+            {variacao !== undefined ? (
+              <span
+                className={cn(
+                  "flex shrink-0 items-center gap-0.5 text-[11px] font-semibold tabular",
+                  bom ? "text-positivo" : "text-critico",
+                )}
+              >
+                {sobe ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
+                {pct(variacao)}
+              </span>
+            ) : null}
           </header>
 
-          <div className="mt-3 flex items-end gap-2">
+          <div className="mt-3 flex items-end gap-1.5">
             <span
               className={cn(
-                "numero-grande text-[2.6rem] leading-none font-semibold tracking-tight",
+                "numero-grande text-[2.35rem] leading-none font-semibold tracking-tight",
                 destaque === "positivo"
                   ? "text-positivo"
                   : destaque === "critico"
@@ -140,29 +168,31 @@ function KpiGrande({
             ) : null}
           </div>
 
-          {variacao !== undefined ? (
-            <p
-              className={cn(
-                "mt-2 flex items-center gap-1 text-sm font-semibold tabular",
-                bom ? "text-positivo" : "text-critico",
-              )}
-            >
-              {sobe ? <TrendingUp className="size-4" /> : <TrendingDown className="size-4" />}
-              {pct(variacao)}
-            </p>
-          ) : (
-            <p className="mt-2 h-5" />
-          )}
+          <p className="mt-1.5 text-[11.5px] leading-snug text-muted-foreground">{explicacao}</p>
 
           <div className="mt-2">
             <Sparkline dados={serie} cor={cor} />
           </div>
+
+          <footer className="mt-2 flex items-center justify-between gap-2 border-t border-border pt-2">
+            <span className="text-[10.5px] font-medium uppercase tracking-wide text-muted-foreground">
+              {periodoRotulo}
+            </span>
+            <Link
+              to={to}
+              aria-label={`Ver detalhes de ${titulo}`}
+              className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
+            >
+              <ArrowRight className="size-4" />
+            </Link>
+          </footer>
         </article>
       </TooltipTrigger>
       <TooltipContent className="max-w-64 text-xs leading-relaxed">{tooltip}</TooltipContent>
     </Tooltip>
   );
 }
+
 
 /* --------------------------------- Gauge --------------------------------- */
 
