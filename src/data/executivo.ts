@@ -15,10 +15,10 @@ export type MesExecutivo = {
 export const ESTOQUE_ANTERIOR = 1553;
 
 export const MESES_2026: MesExecutivo[] = [
-  { mes: "Jan", entradas: 612, saidas: 470, tempoMedio: 58, prazo: 64, parados: 74.2 },
-  { mes: "Fev", entradas: 578, saidas: 442, tempoMedio: 56, prazo: 66, parados: 73.1 },
-  { mes: "Mar", entradas: 596, saidas: 468, tempoMedio: 55, prazo: 67, parados: 72.0 },
-  { mes: "Abr", entradas: 545, saidas: 455, tempoMedio: 53, prazo: 69, parados: 71.4 },
+  { mes: "Jan", entradas: 612, saidas: 470, tempoMedio: 58, prazo: 66, parados: 74.2 },
+  { mes: "Fev", entradas: 578, saidas: 442, tempoMedio: 56, prazo: 68, parados: 73.1 },
+  { mes: "Mar", entradas: 596, saidas: 468, tempoMedio: 55, prazo: 68, parados: 72.0 },
+  { mes: "Abr", entradas: 545, saidas: 455, tempoMedio: 53, prazo: 70, parados: 71.4 },
   { mes: "Mai", entradas: 568, saidas: 458, tempoMedio: 52, prazo: 68, parados: 70.9 },
 ];
 
